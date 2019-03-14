@@ -77,5 +77,6 @@ Rname( )	random deviates
 x <- seq(0, 1, length=100)
 hx <- dbeta(x,1.5,5)
 plot(x,hx,type="l")
+lines(x,dbeta(x,3,1.5),col=2)
 
 ```

@@ -1,0 +1,81 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Code to illustrate fitting input distributions to data
+
+```{r}
+install.packages("fitdistrplus")
+library(MASS)
+library(fitdistrplus)
+```
+
+Use an in-built dataset
+```{r}
+data("groundbeef", package = "fitdistrplus")
+my_data <- groundbeef$serving
+plot(my_data, pch=20)
+```
+
+Plot histogram and density
+```{r}
+plotdist(my_data, histo = TRUE, demp = TRUE)
+descdist(my_data, discrete=FALSE, boot=500) # describe the moments
+```
+Now, let's fit some distributions
+```{r}
+fit_w  <- fitdist(my_data, "weibull")
+fit_g  <- fitdist(my_data, "gamma")
+fit_ln <- fitdist(my_data, "lnorm")
+summary(fit_ln)
+print(fit_ln)
+plot(fit_ln)
+```
+ 
+Plotting the results
+```{r}
+par(mfrow=c(2,2))
+plot.legend <- c("Weibull", "lognormal", "gamma")
+denscomp(list(fit_w, fit_g, fit_ln), legendtext = plot.legend)
+cdfcomp (list(fit_w, fit_g, fit_ln), legendtext = plot.legend)
+qqcomp  (list(fit_w, fit_g, fit_ln), legendtext = plot.legend)
+ppcomp  (list(fit_w, fit_g, fit_ln), legendtext = plot.legend)
+```
+
+The fitting can work with other non-base distribution. In the next eg, the endosulfan dataset cannot be properly fit by the basic distributions like the log-normal:
+```{r}
+data("endosulfan", package = "fitdistrplus")
+my_data <- endosulfan$ATV
+
+fit_ln <- fitdist(my_data, "lnorm")
+cdfcomp(fit_ln, xlogscale = TRUE, ylogscale = TRUE)
+```
+To solve this it is used the Burr and Pareto distributions available at package actuar
+```{r}
+install.packages("actuar")
+library(actuar)
+
+fit_ll <- fitdist(my_data, "llogis", start = list(shape = 1, scale = 500))
+fit_P  <- fitdist(my_data, "pareto", start = list(shape = 1, scale = 500))
+fit_B  <- fitdist(my_data, "burr",   start = list(shape1 = 0.3, shape2 = 1, rate = 1))
+cdfcomp(list(fit_ln, fit_ll, fit_P, fit_B), xlogscale = TRUE, ylogscale = TRUE,
+        legendtext = c("lognormal", "loglogistic", "Pareto", "Burr"), lwd=2)
+```
+Now, print some goodness of fit tests
+```{r}
+gofstat(list(fit_ln, fit_ll, fit_P, fit_B), fitnames = c("lnorm", "llogis", "Pareto", "Burr"))
+```
+
+Plotting distributions
+name	description
+dname( )	density or probability function
+pname( )	cumulative density function
+qname( )	quantile function
+Rname( )	random deviates
+```{r}
+x <- seq(0, 1, length=100)
+hx <- dbeta(x,1.5,5)
+plot(x,hx,type="l")
+
+```
